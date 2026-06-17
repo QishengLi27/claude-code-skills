@@ -143,5 +143,4 @@ test: add test for [what]
 
 ## User Context
 
-GitHub username: `QishengLi27`
-Active repos: e-commerce-longchain-test, datataxon, doc-intelligence-demo
+The skill should infer the GitHub username from `git config user.name` or `git remote -v`, and detect active repos from the current working directory. Never hardcode personal information.

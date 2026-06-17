@@ -31,61 +31,40 @@ REQUIREMENT MAP:
 
 ### Phase 2: Project Cross-Reference
 
-For EACH requirement, search the project for matching evidence:
+For EACH requirement, search the current project for matching evidence:
 
 ```
 Search order:
 1. CLAUDE.md / AGENTS.md — architecture overview
-2. src/**/*.py — implementation code
-3. docs/superpowers/diagrams/*.html — architecture diagrams
-4. docs/superpowers/specs/*.md — design documents
-5. tests/ — test coverage as evidence
+2. Source files — implementation code
+3. docs/ — design documents, architecture diagrams
+4. tests/ — test coverage
 ```
 
-Generate:
+Output format (use ACTUAL file paths found, never hardcoded examples):
 
 ```
-REQ → Project Evidence Matrix:
-
-[REQ-01] "Document parsing pipeline"
-    ✅ FOUND: docs/superpowers/diagrams/doc-intelligence-platform.html → Tab "Doc Parsing"
-    ✅ FOUND: 4-tier architecture (OCR → Structured → VLM → Multimodal LLM)
-    ✅ FOUND: Tier comparison table with MinerU, LlamaParse, ColPali, GPT-4V
-
-[REQ-02] "Agentic workflow orchestration"
-    ✅ FOUND: backend/graph/nodes.py → LangGraph StateGraph with 8 nodes
-    ✅ FOUND: Conditional routing (classify_intent → route → tool → reply → validate)
-    ✅ FOUND: Self-correction loop (validate_reply with max 2 retries)
-    ✅ FOUND: Context compression (2-pass: sliding window + token budget)
-
-[REQ-05] "Prompt Engineering, Few-shot, CoT"
-    ✅ FOUND: backend/graph/nodes.py → _REPLY_PROMPT + _STRICT_REPLY_PROMPT
-    ⚠️ WEAK: No CoT or Few-shot examples in actual implementation
-    ⚠️ FILL: Mention the CoT design for Datataxon's extraction.py
+[REQ-XX] "JD requirement text"
+    ✅ FOUND: <path/to/actual/file> → <what it demonstrates>
+    ✅ FOUND: <path/to/another/file> → <what it demonstrates>
+    ⚠️ WEAK: <what's missing>
 ```
 
-Score each: ✅ Strong evidence / ⚠️ Partial / ❌ Gap
+Score each: ✅ Strong / ⚠️ Partial / ❌ Gap
 
 ### Phase 3: STAR Story Generation
 
-For each ✅ or ⚠️ requirement, generate a STAR story from the ACTUAL code:
+For each ✅ or ⚠️ requirement, generate a STAR story grounded in the ACTUAL project code:
 
 ```
-[REQ-02] "Agentic workflow orchestration"
-    S: The e-commerce agent used a ReAct loop — LLM decided its own path,
-       leading to inconsistent tool calls and hallucinated routing.
-    T: I was responsible for migrating to a deterministic agent architecture
-       that could be audited and debugged.
-    A: I chose LangGraph StateGraph — every node is a pure function State→State.
-       Conditional routing replaces LLM-decided tool selection. Context
-       compression handles multi-turn conversations. A validation loop
-       (LLM auditor → retry → stricter prompt) catches hallucinations.
-       PostgreSQL checkpointing persists state across sessions.
-    R: The agent now follows deterministic paths. Every tool call is
-       traceable. The self-correction loop catches unverified claims.
-       SSE streaming provides real-time token output.
-    Code: backend/graph/nodes.py, backend/graph/agent_graph.py
+S: [Situation — what problem existed, with context]
+T: [Task — what you were responsible for]
+A: [Action — what you specifically did, citing actual files]
+R: [Result — what changed, with metrics if available]
+Code: [actual file paths in the project]
 ```
+
+Each story must cite specific files as evidence. Never use generic placeholders — read the actual code and build the story around it.
 
 ### Phase 4: Gap Analysis + Interview Strategy
 
@@ -93,13 +72,11 @@ For each ✅ or ⚠️ requirement, generate a STAR story from the ACTUAL code:
 ## Gaps to Address
 | JD Requirement | Your Evidence | Risk | Mitigation |
 |---------------|--------------|------|-----------|
-| "Document parsing" | Design only (HTML diagram) | Medium — no running code | Mention doc-intelligence-demo project |
-| "Few-shot/CoT" | Design (extraction.py CoT) | Low — you can explain the approach | Show reasoning.py's CoT prompts |
+| [Weak area 1] | [Current evidence] | [Risk level] | [How to address in interview] |
+| [Weak area 2] | [Current evidence] | [Risk level] | [How to address in interview] |
 
 ## Questions You Should Ask
-- "What document types and languages does the platform handle?"
-- "What's the latency requirement for batch document processing?"
-- "Does the team use pre-built chunks or custom ingestion?"
+- Based on JD gaps and the role's tech stack, generate 3-5 intelligent questions
 ```
 
 ## Output Format
@@ -128,7 +105,7 @@ For each ✅ or ⚠️ requirement, generate a STAR story from the ACTUAL code:
 
 ## Critical Rules
 
-1. **Every claim MUST cite a file.** Not "I designed X" but "I designed X (see `backend/graph/nodes.py:88-132`)." If the interviewer asks "how?" you have the code.
+1. **Every claim MUST cite a file.** Not "I designed X" but "I designed X (see `path/to/file.py:88-132`)." If the interviewer asks "how?" you have the code.
 2. **Be honest about gaps.** A gap with a clear mitigation plan is better than pretending you have evidence you don't.
 3. **Read the ACTUAL code, not just docs.** The JD→code mapping must be based on reading source files, not assuming what's there.
 4. **Generate at least 8 STAR stories.** Each story maps to 1-3 JD requirements. A story can serve multiple behavioral questions.
